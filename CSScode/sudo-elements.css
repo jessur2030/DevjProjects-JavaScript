@@ -1,0 +1,72 @@
+/*********************************
+** CSS variables
+*****************************/
+
+:root{
+    --div-background-color: red;
+    --text-color:black;
+    --div-padding: 20px;
+    --div-margin:10px;
+}
+
+body{
+    background-color: var(--background-color, pink);
+}
+
+.chill{
+    background-color: var(--div-background-color);
+    color: var(--text-color)
+}
+
+.one{
+    --div-background-color:blue;
+    --text-color:white;
+}
+
+.one-one{
+    margin: var(--div-margin);
+    padding: var(--div-padding)
+}
+
+.one-two{
+    margin: var(--div-margin);
+    padding: var(--div-padding)
+}
+
+
+/*********************************
+** ::before ::after Sudo elements
+*****************************/
+
+.required::after {
+  content: "*";
+  color: red;
+}
+
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 5px;
+  padding: 5px;
+  background-color: lightgray;
+}
+
+.btn {
+  padding: 10px;
+  color: #fff;
+ 
+}
+
+.btn-1 {
+  background-color: rgb(126, 128, 0);
+}
+.btn-2 {
+  background-color: blueviolet;
+}

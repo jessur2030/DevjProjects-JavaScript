@@ -4,6 +4,10 @@
 /*****************
 **final-score feature
 ******************/
+
+/* :root {
+  --text-color-light: black;
+} */
 .final-score {
   position: absolute;
   left: 50%;
@@ -20,9 +24,12 @@
 /*************************
 **second dice feature
 ******************/
-#dice-1{ top: 120px; }
-#dice-2{ top: 250px; }
-
+#dice-1 {
+  top: 120px;
+}
+#dice-2 {
+  top: 250px;
+}
 
 * {
   margin: 0;
@@ -36,12 +43,55 @@
   clear: both;
 }
 
+.btn {
+  background-color: #4caf50; /* Green */
+  border: none;
+  color: white;
+  padding: 16px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  transition-duration: 0.4s;
+  cursor: pointer;
+  top: 10px;
+  left: 30%;
+}
+
+.btn-light {
+  background-color: #4caf50; /* Green */
+  border: none;
+  color: white;
+  padding: 16px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  transition-duration: 0.4s;
+  cursor: pointer;
+  top: 10px;
+  left: 70%;
+}
+.btn-dark:hover {
+  background-color: #555555;
+  color: white;
+}
+
+.btn-dark {
+  background-color: white;
+  color: black;
+  border: 2px solid #555555;
+}
+
 body {
-  background-image: linear-gradient(
+  background-color: var(--background-color, pink);
+  /* background-image: linear-gradient(
       rgba(62, 20, 20, 0.4),
       rgba(62, 20, 20, 0.4)
     ),
-    url(back.jpg);
+    url(back.jpg); */
   background-size: cover;
   background-position: center;
   font-family: Lato;
@@ -168,7 +218,7 @@ i {
 }
 
 .btn-new {
-  top: 45px;
+  top: 90px;
 }
 .btn-roll {
   top: 403px;

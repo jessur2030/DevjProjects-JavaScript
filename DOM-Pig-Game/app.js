@@ -195,3 +195,14 @@ function hideDice() {
   document.getElementById("dice-1").style.display = "none";
   document.getElementById("dice-2").style.display = "none";
 }
+
+//Themes
+document.getElementById("dark-theme-btn").addEventListener("click", () => {
+  //get root element   //set a background color
+  document.documentElement.style.setProperty("--background-color", "#333");
+});
+
+document.getElementById("light-theme-btn").addEventListener("click", () => {
+  //get root element   //set a background color
+  document.documentElement.style.setProperty("--background-color", "#fff");
+});
