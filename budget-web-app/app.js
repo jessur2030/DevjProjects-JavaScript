@@ -70,6 +70,20 @@ const budgetController = (function () {
       return newItem;
     },
 
+    deleteItem: function (type, id) {
+      let ids, index;
+      //**map() method loops over element of the current array and return a new ARRAY */
+      ids = data.allItems[type].map(function (current) {
+        return current.id;
+      });
+      index = ids.indexOf(id);
+
+      if (index !== -1) {
+        //**splice() method removes the element from the array */
+        data.allItems[type].splice(index, 1);
+      }
+    },
+
     //**CALCULATE'S BUDGET FUNCTION */
     //**Calculates the SUM of all INCOME'S AND the SUM of total EXPENSES */
     //**Calculates the budget: The INCOMES - EXPENSES*/
@@ -98,9 +112,9 @@ const budgetController = (function () {
       };
     },
 
-    // testing: function () {
-    //   console.log(data);
-    // },
+    testing: function () {
+      console.log(data);
+    },
   };
 })();
 
@@ -119,6 +133,7 @@ const UIController = (function () {
     budgetLabel: ".budget__value",
     budgetIncomeLabel: ".budget__income--value",
     expensesLabel: ".budget__expenses--value",
+    container: ".container",
     // persentageLabel: "budget__expenses--percentage",
   };
 
@@ -144,18 +159,17 @@ const UIController = (function () {
       if (type === "inc") {
         element = DOMstring.incomeContainer;
         html =
-          '<div class="item clearfix" id="income-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">$%value%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
+          '<div class="item clearfix" id="inc-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">$%value%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
       } else if (type === "exp") {
         element = DOMstring.expensesContainer;
         html =
-          '<div class="item clearfix" id="expense-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">$%value%</div><div  class="item__percentage">%percentage%%"</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
+          '<div class="item clearfix" id="exp-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">$%value%</div><div  class="item__percentage">21%</div> <div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
       }
 
       // replace th eplaceholder rext with the user input data
       newHtml = html.replace("%id%", obj.id);
       newHtml = newHtml.replace("%description%", obj.description);
       newHtml = newHtml.replace("%value%", obj.value);
-      newHtml = newHtml.replace("%percentage%", obj.percentage);
 
       // Insert the HTML into the DOM
 
@@ -170,12 +184,18 @@ const UIController = (function () {
       let html, newHtml;
     },
 
+    deleteListItem: function (selectorId) {
+      let element = document.getElementById(selectorId);
+      element.parentNode.removeChild(element);
+    },
+
     crearFiels: function () {
       let fields, fieldsArr;
       fields = document.querySelectorAll(
         DOMstring.inputDescription + ", " + DOMstring.inputValue
       );
 
+      //**slide() method makes a copy of element */
       fieldsArr = Array.prototype.slice.call(fields);
 
       fieldsArr.forEach(function (current, indexNum, array) {
@@ -208,7 +228,7 @@ const UIController = (function () {
 })();
 
 /********************************************
- ** GLOBAL APP CONTROLLER*/
+ ** GLOBAL APP CONTROLLER *******************/
 //this controller connects 'budgetController and UIController'
 // In here we calls methods for the budgetController and UIController
 let appController = (function (budgetCtrl, UICtrl) {
@@ -228,9 +248,11 @@ let appController = (function (budgetCtrl, UICtrl) {
       if (event.keyCode === 13 || event.which === 13) {
         ctrlAddItem();
       }
-
-      //READ data from html input types
     });
+
+    document
+      .querySelector(DOM.container)
+      .addEventListener("click", ctrlDeleteItem);
   };
 
   /*************************************
@@ -267,6 +289,28 @@ let appController = (function (budgetCtrl, UICtrl) {
       UICtrl.crearFiels();
 
       // // 5. calculate and update budget
+      updateBudget();
+    }
+  };
+
+  let ctrlDeleteItem = function (event) {
+    let itemID, splitID, type, ID;
+
+    itemID = event.target.parentNode.parentNode.parentNode.parentNode.id;
+
+    if (itemID) {
+      //inc-1
+      splitID = itemID.split("-");
+      type = splitID[0];
+      ID = parseInt(splitID[1]);
+
+      // 1. delete the item from the data structure
+      budgetCtrl.deleteItem(type, ID);
+
+      // 2. delete the items from the UI
+      UICtrl.deleteListItem(itemID);
+
+      // 3. Update and show the new budget
       updateBudget();
     }
   };
