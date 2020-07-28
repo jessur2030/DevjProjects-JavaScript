@@ -2,6 +2,8 @@
 *** GENERAL
 **********************************************/
 
+/**** :root {   }  *******/
+
 * {
   margin: 0;
   padding: 0;
@@ -131,7 +133,7 @@ body {
 }
 
 .add__type {
-  width: 55px;
+  width: 100px;
   border: 1px solid #e7e7e7;
   height: 44px;
   font-size: 18px;

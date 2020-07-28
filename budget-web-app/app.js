@@ -1,16 +1,32 @@
-/***************************************
- ** separation of consern modules architecture
- */
+/*********************************************************
+ **--- SEPARATION OF CONSERN MODULES ARCHITECTURE ---****/
 
 //Inmirially invoque function OT IFI
-/********************************************
- ** BUDGET MODULE CONTROLLER*/
+/*******************************budgetController********************************
+ **------------------------ BUDGET MODULE CONTROLLER ------------------------***/
 const budgetController = (function () {
   //functions constructor object to stores inputs values
   let Expense = function (id, description, value) {
     this.id = id;
     this.description = description;
     this.value = value;
+    this.percentage = -1;
+  };
+
+  //**CALCULATES EACH INDIVIDUAL EXPENSES PERCENTAGES **/
+  //**------------- calcPercentage------------------- **/
+  Expense.prototype.calcPercentage = function (totalIncome) {
+    if (totalIncome > 0) {
+      this.percentage = Math.round((this.value / totalIncome) * 100);
+    } else {
+      this.percentage = -1;
+    }
+  };
+
+  //**RETURNS EACH INDIVIDUAL EXPENSES PERCENTAGES ****/
+  //**------------- getPercentage------------------- **/
+  Expense.prototype.getPercentage = function () {
+    return this.percentage;
   };
 
   let Income = function (id, description, value) {
@@ -29,9 +45,9 @@ const budgetController = (function () {
     data.totals[type] = sum;
   };
 
-  /*************************************
+  /********************************************
   ** INPUTS BLOBAL APP DATA STRUCTURE *********
-  local database*******/
+  local data storage   ***********************/
   const data = {
     allItems: {
       exp: [],
@@ -88,7 +104,7 @@ const budgetController = (function () {
     //**Calculates the SUM of all INCOME'S AND the SUM of total EXPENSES */
     //**Calculates the budget: The INCOMES - EXPENSES*/
     //**Calculates the persentage: EXPENSES / INCOMES * 100   */
-    calculateBudge: function () {
+    calculateBudget: function () {
       // calculate total income and expenses
       calculateTotal("exp");
       calculateTotal("inc");
@@ -100,6 +116,19 @@ const budgetController = (function () {
       } else {
         data.percentage = -1; // -1: trasnlate to non existens
       }
+    },
+
+    calculatePercentages: function () {
+      data.allItems.exp.forEach(function (cur) {
+        cur.calcPercentage(data.totals.inc);
+      });
+    },
+
+    getPercentages: function () {
+      let allPerc = data.allItems.exp.map(function (cur) {
+        return cur.getPercentage();
+      });
+      return allPerc;
     },
 
     //function method to return total budgets and its values
@@ -118,9 +147,9 @@ const budgetController = (function () {
   };
 })();
 
-/********************************************
- ** UI MODULE CONTROLLER   // Also, cumplirlly independent module*/
-//Isolated function (inmiriarlly invoque function espression) from outside of uiController
+/*****************************UIController***********************************
+ **------------------------ UI MODULE CONTROLLER ------------------------***/
+//***PRIVATES FUNCTIONS***//
 const UIController = (function () {
   //*privite variable to store App's DOM strings****/
   let DOMstring = {
@@ -134,7 +163,35 @@ const UIController = (function () {
     budgetIncomeLabel: ".budget__income--value",
     expensesLabel: ".budget__expenses--value",
     container: ".container",
+    expensesPercentageLabel: ".item__percentage",
+    dateLabel: ".budget__title--month",
     // persentageLabel: "budget__expenses--percentage",
+  };
+
+  //**Function format numbers */
+  let formatNumber = function (num, type) {
+    let numSplit, int, dec;
+    num = Math.abs(num);
+    num = num.toFixed(2);
+
+    numSplit = num.split(".");
+    int = numSplit[0];
+    if (int.length > 3) {
+      int = int.substr(0, int.length - 3) + "," + int.substr(int.length - 3, 3);
+    }
+
+    dec = numSplit[1];
+
+    //***----- Terminary operator ------***/
+    // type === 'exp' ? sign = '-' :  sign = '+'
+
+    return (type === "exp" ? "- " : "+ ") + "" + int + "." + dec;
+  };
+
+  let nodeListForEach = function (list, callback) {
+    for (var i = 0; i < list.length; i++) {
+      callback(list[i], i);
+    }
   };
 
   //public function: in object
@@ -159,17 +216,17 @@ const UIController = (function () {
       if (type === "inc") {
         element = DOMstring.incomeContainer;
         html =
-          '<div class="item clearfix" id="inc-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">$%value%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
+          '<div class="item clearfix" id="inc-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
       } else if (type === "exp") {
         element = DOMstring.expensesContainer;
         html =
-          '<div class="item clearfix" id="exp-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">$%value%</div><div  class="item__percentage">21%</div> <div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
+          '<div class="item clearfix" id="exp-%id%"><div class="item__description">%description%</div><div class="right clearfix"><div class="item__value">%value%</div><div  class="item__percentage">21%</div> <div class="item__delete"><button class="item__delete--btn"><i class="ion-ios-close-outline"></i></button></div></div></div>';
       }
 
       // replace th eplaceholder rext with the user input data
       newHtml = html.replace("%id%", obj.id);
       newHtml = newHtml.replace("%description%", obj.description);
-      newHtml = newHtml.replace("%value%", obj.value);
+      newHtml = newHtml.replace("%value%", formatNumber(obj.value, type));
 
       // Insert the HTML into the DOM
 
@@ -205,16 +262,21 @@ const UIController = (function () {
       fieldsArr[0].focus();
     },
 
-    getDOMstrings: function () {
-      return DOMstring;
-    },
-
     displayBudget: function (obj) {
-      document.querySelector(DOMstring.budgetLabel).textContent = obj.budget;
-      document.querySelector(DOMstring.budgetIncomeLabel).textContent =
-        obj.totalInc;
-      document.querySelector(DOMstring.expensesLabel).textContent =
-        obj.totalExp;
+      let type;
+
+      obj.budget > 0 ? (type = "inc") : (type = "exp");
+
+      document.querySelector(DOMstring.budgetLabel).textContent = formatNumber(
+        obj.budget,
+        type
+      );
+      document.querySelector(
+        DOMstring.budgetIncomeLabel
+      ).textContent = formatNumber(obj.totalInc, "inc");
+      document.querySelector(
+        DOMstring.expensesLabel
+      ).textContent = formatNumber(obj.totalExp, "exp");
 
       if (obj.percentage > 0) {
         document.querySelector(".budget__expenses--percentage").textContent =
@@ -224,14 +286,74 @@ const UIController = (function () {
           "--";
       }
     },
-  };
-})();
 
-/********************************************
- ** GLOBAL APP CONTROLLER *******************/
+    displayPercentages: function (percentages) {
+      var fields = document.querySelectorAll(".item__percentage");
+
+      nodeListForEach(fields, function (current, index) {
+        if (percentages[index] > 0) {
+          current.textContent = percentages[index] + "%";
+        } else {
+          current.textContent = "---";
+        }
+      });
+    },
+
+    //**FUNCTION displayMonth Display current Day in UI ***/
+    displayMonth: function () {
+      let now, year, month, months;
+      now = new Date();
+
+      months = [
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December",
+      ];
+      month = now.getMonth();
+
+      year = now.getFullYear();
+
+      document.querySelector(DOMstring.dateLabel).textContent =
+        months[month] + " " + year;
+    },
+
+    changedType: function () {
+      let fields = document.querySelectorAll(
+        DOMstring.inputType +
+          "," +
+          DOMstring.inputDescription +
+          "," +
+          DOMstring.inputValue
+      );
+
+      nodeListForEach(fields, function (cur) {
+        cur.classList.toggle("red-focus");
+      });
+
+      document.querySelector(DOMstring.inputAddBtn).classList.toggle("red");
+    },
+
+    getDOMstrings: function () {
+      return DOMstring;
+    },
+  };
+})(); //********************UI CONTROLLER END********************/
+
+/*****************************appController***********************************
+ **------------------------ GLOBAL APP CONTROLLER ------------------------***/
 //this controller connects 'budgetController and UIController'
 // In here we calls methods for the budgetController and UIController
 let appController = (function (budgetCtrl, UICtrl) {
+  //*** FUNCTION setupEventListerners: handles all event listerner on the page****/
   let setupEventListerners = function () {
     // DOM variable to get the UIController.getDOMstrings()
     let DOM = UIController.getDOMstrings();
@@ -253,24 +375,39 @@ let appController = (function (budgetCtrl, UICtrl) {
     document
       .querySelector(DOM.container)
       .addEventListener("click", ctrlDeleteItem);
+
+    document
+      .querySelector(DOM.inputType)
+      .addEventListener("change", UICtrl.changedType);
   };
 
-  /*************************************
-   **UPDATE BUDGET FUCNTION**************
+  /**********************************************
+   **--- UPDATE BUDGET FUCNTION ---**************
    *********************/
   let updateBudget = function () {
     // // 1. Calculate the budget
-    budgetCtrl.calculateBudge();
+    budgetCtrl.calculateBudget();
     // // 2. return the budget
     //return the all items in getBudget() function object and store it in budget variable!!!
     let budget = budgetCtrl.getBudget();
 
     // // 3. Dsiplay the budget on the UI
-    //**CALLS THE displayBudget FUNCTION METHOD ***/
+    //**--- CALLS THE displayBudget FUNCTION METHOD ---***/
     UICtrl.displayBudget(budget);
   };
 
-  //**ctrlAddItem Function: it's called every time the USER enter's a new ELEMENT */
+  //**--- UPDATES THE PERCENTAGES FUNCTION ---***/
+  let updatePercentages = function () {
+    // 1. calculate the percentages
+    budgetCtrl.calculatePercentages();
+    // 2. Read percentages ftom the budget controller
+    let percentages = budgetCtrl.getPercentages();
+
+    // 3. update the UI  with the new percentages
+    UICtrl.displayPercentages(percentages);
+  };
+
+  //**--- ctrlAddItem Function: it's called every time the USER enter's a new ELEMENT ---*/
   let ctrlAddItem = function () {
     let input, newItem;
     // //TO DO LIST, as soon as the user clicks the button
@@ -290,6 +427,9 @@ let appController = (function (budgetCtrl, UICtrl) {
 
       // // 5. calculate and update budget
       updateBudget();
+
+      // // 6. CALCULATES AND UPDATE PERCENTAGES
+      updatePercentages();
     }
   };
 
@@ -312,13 +452,17 @@ let appController = (function (budgetCtrl, UICtrl) {
 
       // 3. Update and show the new budget
       updateBudget();
+
+      // 4. CALCULATES AND UPDATE PERCENTAGES
+      updatePercentages();
     }
   };
 
-  //**init FUCNTION: INITIALITES ALL THE Event Listerners*/
+  //**--- init FUCNTION: INITIALITES ALL THE Event Listerners ---*/
   return {
     init: function () {
       // console.log("Application has started.");
+      UICtrl.displayMonth();
       //**SETS EVRYTHING BACK TO 0 */
       UICtrl.displayBudget({
         budget: 0,
