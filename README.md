@@ -1,2 +1,2 @@
-# DevjProjects-JavaScript
+# JavaScript-Projects
 JavaScript Projects
