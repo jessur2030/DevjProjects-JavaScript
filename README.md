@@ -1,2 +1,2 @@
-# JavaScript-Projects
+# JavaScript practice projects
 JavaScript Projects
